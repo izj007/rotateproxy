@@ -31,8 +31,8 @@ func CheckProxyAlive(proxyURL string) (respBody string, timeout int64, avail boo
 	proxy, _ := url.Parse(proxyURL)
 	httpclient := &http.Client{
 		Transport: &http.Transport{
-			Proxy:           http.ProxyURL(proxy),
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Proxy:             http.ProxyURL(proxy),
+			TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
 			DisableKeepAlives: true,
 		},
 		Timeout: 20 * time.Second,
@@ -49,6 +49,10 @@ func CheckProxyAlive(proxyURL string) (respBody string, timeout int64, avail boo
 		return "", 0, false
 	}
 	if !strings.Contains(string(body), "地址") {
+		return "", 0, false
+	}
+
+	if !strings.Contains(string(body), "运营商") {
 		return "", 0, false
 	}
 	return string(body), timeout, true

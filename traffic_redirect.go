@@ -18,15 +18,15 @@ const (
 )
 
 var (
-	largeBufferSize = 32 * 1024 // 32KB large buffer
+	largeBufferSize   = 32 * 1024 // 32KB large buffer
 	ErrNotSocks5Proxy = errors.New("this is not a socks proxy server")
 )
 
 type BaseConfig struct {
-	ListenAddr   string
-	IPRegionFlag int // 0: all 1: cannot bypass gfw 2: bypass gfw
-	Username string
-	Password string
+	ListenAddr     string
+	IPRegionFlag   int // 0: all 1: cannot bypass gfw 2: bypass gfw
+	Username       string
+	Password       string
 	SelectStrategy int // 0: random, 1: Select the one with the shortest timeout, 2: Select the two with the shortest timeout, ...
 }
 
@@ -45,7 +45,6 @@ type AuthPreProcessor struct {
 type NoAuthPreProcessor struct {
 	cfg BaseConfig
 }
-
 
 // DownstreamPreProcess auth for socks5 server(local)
 func (p *AuthPreProcessor) DownstreamPreProcess(conn net.Conn) (err error) {
@@ -145,7 +144,6 @@ func NewNoAuthPreProcessor(cfg BaseConfig) *NoAuthPreProcessor {
 	return &NoAuthPreProcessor{cfg: cfg}
 }
 
-
 type RedirectClient struct {
 	config *BaseConfig
 
@@ -198,7 +196,7 @@ func (c *RedirectClient) Serve() error {
 func (c *RedirectClient) getValidSocks5Connection() (net.Conn, error) {
 	var cc net.Conn
 	for {
-		key, markUnavail, err := RandomProxyURL(c.config.IPRegionFlag, c.config.SelectStrategy)
+		key, markUnavail, addUseCount, err := RandomProxyURL(c.config.IPRegionFlag, c.config.SelectStrategy)
 		if err != nil {
 			return nil, err
 		}
@@ -222,6 +220,7 @@ func (c *RedirectClient) getValidSocks5Connection() (net.Conn, error) {
 			fmt.Printf("socks handshake with downstream failed: %v\n", err)
 			continue
 		}
+		addUseCount()
 		break
 	}
 	return cc, nil
@@ -260,11 +259,11 @@ func closeConn(conn net.Conn) (err error) {
 
 func transport(rw1, rw2 io.ReadWriter) error {
 	g, _ := errgroup.WithContext(context.Background())
-	g.Go(func() error{
+	g.Go(func() error {
 		return copyBuffer(rw1, rw2)
 	})
 
-	g.Go(func() error{
+	g.Go(func() error {
 		return copyBuffer(rw2, rw1)
 	})
 	var err error
