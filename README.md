@@ -7,6 +7,11 @@
 - 支持认证
 - 代理列表优选策略：随机、或延时前多少位随机
 
+## 更新
+- 更改搜索时间为12小时一次
+- 更改搜索内容为前一天的fofa结果
+- 新增一个http服务,接口为getproxy,每访问一次随机返回一个代理
+
 ## 帮助
 
 ```shell
@@ -16,14 +21,20 @@ Usage of rotateproxy.exe:
         email address
   -l string
         listen address (default ":8899")
+  -lw string
+        Http Server listen address (default ":9000")
   -page int
         the page count you want to crawl (default 5)
   -pass string
         authentication password
+  -proxy string
+        proxy
   -region int
         0: all 1: cannot bypass gfw 2: bypass gfw
   -rule string
-        search rule (default "protocol==\"socks5\" && \"Version:5 Method:No Authentication(0x00)\" && after=\"2021-08-01\" && country=\"CN\"")
+        protocol=="socks5" && "Version:5 Method:No Authentication(0x00)" && after="2022-03-01" && country="CN"
+  -strategy int
+        0: random, 1: Select the one with the shortest timeout, 2: Select the two with the shortest timeout, 3: Select the one without used... (default 99)
   -token string
         token
   -user string
